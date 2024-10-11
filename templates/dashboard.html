@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Query Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>MongoDB Query Processing and Optimization Dashboard</h1>
+    <form id="queryForm">
+        <label for="operation">Choose Operation:</label>
+        <select id="operation">
+            <option value="find">Find</option>
+            <option value="insert">Insert</option>
+            <option value="update">Update</option>
+            <option value="aggregate">Aggregate</option>
+        </select><br><br>
+         <div id="updateTypeContainer" style="display:none;">
+            <label for="updateType">Select Update Type:</label><br>
+            <select id="updateType">
+                <option value="updateOne">Update One</option>
+                <option value="updateMany">Update Many</option>
+            </select><br>
+        </div>
+        <label for="query">Enter your query (JSON format):</label><br>
+        <textarea id="query" rows="4" cols="50"></textarea><br>
+
+        <button type="submit">Run Query</button>
+    </form>
+    <h2>Results:</h2>
+    <pre id="res"></pre>
+    <h2>Execution Time:</h2>
+    <div id="executionTime"></div>
+
+   <script>
+       document.getElementById('operation').addEventListener('change', function() {
+            const updateTypeContainer = document.getElementById('updateTypeContainer');
+            if (this.value === 'update') {
+                updateTypeContainer.style.display = 'block';
+            } else {
+                updateTypeContainer.style.display = 'none';
+            }
+        });
+    document.getElementById('queryForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const operation =document.getElementById('operation').value;
+        const query = document.getElementById('query').value;
+        const data =document.getElementById('query').value;
+        const pipeline =document.getElementById('query').value;
+        let updateType = '';
+            if (operation == 'update') {
+                updateType = document.getElementById('updateType').value;
+            }
+
+
+
+        let parsedQuery , parsedData , parsedPipeline;
+        try {
+            parsedQuery = query ?  JSON.parse(query) : {};
+            parsedData = data ? JSON.parse(data) : {};
+            parsedPipeline = pipeline ? JSON.parse(pipeline) : [];
+
+
+
+
+        } catch (e) {
+            document.getElementById('res').textContent = 'Invalid JSON format. Please correct it.';
+            return; // Exit early
+        }
+
+        fetch('/runquery', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+            operation: operation,
+            query: parsedQuery,
+            data: parsedData,
+            pipeline: parsedPipeline,
+            updateType: updateType,
+            })
+        })
+
+        .then(response => {
+
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error); });
+            }
+            return response.json();
+        })
+        .then(data => {
+
+            const finalquery = JSON.parse(data.results);
+
+            document.getElementById('res').textContent = JSON.stringify(finalquery, null, 2);
+
+            document.getElementById('executionTime').textContent = `${data.execution_time.toFixed(6)} seconds`;
+
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('results').textContent = `Error occurred: ${error.message}`;
+        });
+
+</script>
+
+</body>
+</html>
