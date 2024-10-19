@@ -32,6 +32,8 @@
     <pre id="res"></pre>
     <h2>Execution Time:</h2>
     <div id="executionTime"></div>
+    <h2>Optimization Suggestions:</h2>
+    <ul id="optimizations"></ul>
 
    <script>
        document.getElementById('operation').addEventListener('change', function() {
@@ -69,7 +71,7 @@
             return; // Exit early
         }
 
-        fetch('/runquery', {
+        fetch('/run_query2', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -82,7 +84,6 @@
             updateType: updateType,
             })
         })
-
         .then(response => {
 
             if (!response.ok) {
@@ -92,17 +93,30 @@
         })
         .then(data => {
 
+            if (operation === 'insert') {
+            document.getElementById('res').textContent = data.message || 'Data inserted';
+        } else if (operation === 'update') {
+            document.getElementById('res').textContent = data.message || 'Data updated';
+        } else {
+            // For find and aggregate operations, show the actual query results
             const finalquery = JSON.parse(data.results);
-
             document.getElementById('res').textContent = JSON.stringify(finalquery, null, 2);
-
+        }
             document.getElementById('executionTime').textContent = `${data.execution_time.toFixed(6)} seconds`;
-
+             const optimizations = data.optimizations;
+                const optimizationsList = document.getElementById('optimizations');
+                optimizationsList.innerHTML = ''; // Clear previous suggestions
+                optimizations.forEach(opt => {
+                    const li = document.createElement('li');
+                    li.textContent = opt;
+                    optimizationsList.appendChild(li);
+                    });
+        })
         .catch(error => {
             console.error('Error:', error);
             document.getElementById('results').textContent = `Error occurred: ${error.message}`;
         });
-
+    });
 </script>
 
 </body>
