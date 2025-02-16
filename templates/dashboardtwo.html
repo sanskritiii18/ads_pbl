@@ -22,6 +22,8 @@
                 <option value="updateOne">Update One</option>
                 <option value="updateMany">Update Many</option>
             </select><br>
+                <label for="data">Enter Update Data (JSON format):</label><br>
+                <textarea id="data" rows="4" cols="50"></textarea><br>
         </div>
         <label for="query">Enter your query (JSON format):</label><br>
         <textarea id="query" rows="4" cols="50"></textarea><br>
@@ -48,11 +50,18 @@
         event.preventDefault();
         const operation =document.getElementById('operation').value;
         const query = document.getElementById('query').value;
-        const data =document.getElementById('query').value;
+        let data = {}; // Initialize empty object
         const pipeline =document.getElementById('query').value;
         let updateType = '';
             if (operation == 'update') {
                 updateType = document.getElementById('updateType').value;
+                const dataInput = document.getElementById('data').value; // Capture update data
+                try {
+                    data = JSON.parse(dataInput); // Convert string to JSON
+                } catch (e) {
+                    document.getElementById('res').textContent = 'Invalid JSON format in update data.';
+                    return;
+                }
             }
 
 
@@ -60,7 +69,6 @@
         let parsedQuery , parsedData , parsedPipeline;
         try {
             parsedQuery = query ?  JSON.parse(query) : {};
-            parsedData = data ? JSON.parse(data) : {};
             parsedPipeline = pipeline ? JSON.parse(pipeline) : [];
 
 
@@ -70,7 +78,6 @@
             document.getElementById('res').textContent = 'Invalid JSON format. Please correct it.';
             return; // Exit early
         }
-
         fetch('/run_query2', {
             method: 'POST',
             headers: {
@@ -79,7 +86,7 @@
             body: JSON.stringify({
             operation: operation,
             query: parsedQuery,
-            data: parsedData,
+            data: data,
             pipeline: parsedPipeline,
             updateType: updateType,
             })

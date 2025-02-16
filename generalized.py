@@ -10,7 +10,7 @@ db = client["school"]  # Replace with your database name
 collection = db["student"]  # Replace with your collection name
 """
 
-# Attempt to connect to MongoDB
+
 try:
     client = MongoClient("mongodb://localhost:27017/")
     # Test the connection
@@ -70,6 +70,7 @@ def optimize_query(operation, query, pipeline=None):
 
 @app.route('/run_query2', methods=['GET', 'POST'])
 def run_query2():
+    global results_
     start_time = time.time()
 
     operation = request.json.get('operation', '').lower()
@@ -109,17 +110,17 @@ def run_query2():
                 }
 
         elif operation == 'aggregate':
-            results_ = list(collection.aggregate(pipeline))
+            results_= list(collection.aggregate(pipeline))
             results_ = json_util.dumps(results_)
 
         else:
 
-            return jsonify({"error": "Unsupported operation", "execution_time": time.time() - start_time}), 400
+            return jsonify({"error": "Unsupported operation", "execution_time": time.time() - start_time}),
 
         optimization_suggestions = optimize_query(operation, queryy, pipeline)
 
     except Exception as e:
-        return jsonify({"error": str(e), "execution_time": time.time() - start_time}), 400
+        return jsonify({"error": str(e), "execution_time": time.time() - start_time}),
 
     execution_time = time.time() - start_time
     return jsonify({
